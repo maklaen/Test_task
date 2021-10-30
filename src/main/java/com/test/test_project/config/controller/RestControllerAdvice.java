@@ -15,8 +15,13 @@ public class RestControllerAdvice {
                 .collect(Collectors.joining("\n"));
     }
 
+    @ExceptionHandler(value = NullPointerException.class)
+    public String validNullPointerExceptionMessage(NullPointerException exception) {
+        return "The first and last name should not be empty!";
+    }
+
     @ExceptionHandler(value = Exception.class)
-    public String validNullPointerExceptionMessage(Exception exception) {
+    public String validExceptionMessage(Exception exception) {
         return exception.getMessage();
     }
 

@@ -3,6 +3,7 @@ package com.test.test_project.service;
 import com.test.test_project.dto.AuthorBaseDto;
 import com.test.test_project.dto.AuthorDTO;
 import com.test.test_project.dto.BookDTO;
+import com.test.test_project.facade.AuthorFacade;
 import com.test.test_project.facade.BookFacade;
 import com.test.test_project.model.Author;
 import com.test.test_project.model.Book;
@@ -21,6 +22,7 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final AuthorService authorService;
+    private final AuthorFacade authorFacade;
     private final AuthorRepository authorRepository;
     private final BookFacade bookFacade;
 
@@ -68,7 +70,7 @@ public class BookService {
     // Получение всех книг автора
     public List<BookDTO> getAuthorBooks(Long id) {
         List<Book> books = bookRepository.findAllByAuthorId(id);
-        List<BookDTO> booksDTO = new ArrayList<BookDTO>();
+        List<BookDTO> booksDTO = new ArrayList<>();
         for (Book book : books) {
             booksDTO.add(bookFacade.bookToBookDTO(book));
         }
@@ -77,24 +79,26 @@ public class BookService {
 
     // Добавление книги в библиотеку
     public BookDTO addBook(BookDTO bookDto) {
-        if (bookRepository.findByTitle(bookDto.getTitle().toLowerCase()) != null) {
+        if (bookRepository.findByTitle(bookDto.getTitle()) != null) {
             throw new IllegalArgumentException("The book already exist!");
+        }
+
+        // Поиск автора по имени и фамилии
+        AuthorBaseDto authorBaseDto = bookDto.getAuthor();
+        Author author = authorRepository.findByFirstNameAndLastName(authorBaseDto.getFirstName(), authorBaseDto.getLastName());
+
+        // Если автор не найден, создаем нового с полями (Имя, Фамилия)
+        if (author == null) {
+            AuthorDTO authorDto = new AuthorDTO();
+            authorDto.setFirstName(authorBaseDto.getFirstName());
+            authorDto.setLastName(authorBaseDto.getLastName());
+            authorDto = authorService.addAuthor(authorDto);
+            author = authorRepository.findByFirstNameAndLastName(authorDto.getFirstName(), authorDto.getLastName());
         }
 
         Book book = new Book();
         book.setTitle(bookDto.getTitle());
         book.setAvailable(bookDto.isAvailable());
-        // Поиск автора по имени и фамилии
-        AuthorBaseDto authorBaseDto = bookDto.getAuthor();
-        Author author = authorRepository.findByFirstNameAndLastName(authorBaseDto.getFirstName(), authorBaseDto.getLastName());
-
-        if (author == null) {
-            AuthorDTO authorDto = new AuthorDTO();
-            authorDto.setFirstName(authorBaseDto.getFirstName());
-            authorDto.setLastName(authorBaseDto.getLastName());
-            authorService.addAuthor(authorDto);
-        }
-
         book.setAuthor(author);
         List<Book> books = bookRepository.findAll();
         int serialNumber = 0;
@@ -104,10 +108,7 @@ public class BookService {
             if (books.isEmpty()) {
                 serialNumber = 1;
             } else {
-                for (Book book1 : books)
-                    if (serialNumber < book1.getSerialNumber())
-                        serialNumber = book1.getSerialNumber();
-                serialNumber++;
+                serialNumber = books.size() + 1;
             }
         }
         book.setSerialNumber(serialNumber);
@@ -137,8 +138,7 @@ public class BookService {
                 book.setAuthor(author);
         }
         bookRepository.save(book);
-        BookDTO result = bookFacade.bookToBookDTO(book);
-        return result;
+        return bookFacade.bookToBookDTO(book);
     }
 
     // Удаление книги с полки
@@ -163,9 +163,7 @@ public class BookService {
                 bookRepository.save(book1);
             }
 
-        BookDTO result = bookFacade.bookToBookDTO(book);
-
-        return result;
+        return bookFacade.bookToBookDTO(book);
     }
 
 }

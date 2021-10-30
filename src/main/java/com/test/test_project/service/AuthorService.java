@@ -24,6 +24,9 @@ public class AuthorService {
 
     // Добавление автора в список авторов
     public AuthorDTO addAuthor(AuthorDTO authorDTO) {
+        if (authorDTO.getFirstName() == null || authorDTO.getLastName() == null) {
+            throw new IllegalArgumentException("The first and last name should not be empty!");
+        }
         if (authorRepository.findByFirstNameAndLastName(authorDTO.getFirstName(), authorDTO.getLastName()) != null) {
             throw new IllegalArgumentException("Author already exist!");
         }
@@ -44,6 +47,10 @@ public class AuthorService {
 
     // Обновление информации об авторе
     public AuthorDTO updateAuthor(Long id, AuthorDTO authorDTO) throws NotFoundException {
+        if (authorDTO.getFirstName() == null || authorDTO.getLastName() == null) {
+            throw new IllegalArgumentException("The first and last name should not be empty!");
+        }
+
         Author author = authorRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Author not found"));
 
@@ -51,9 +58,12 @@ public class AuthorService {
         author.setLastName(authorDTO.getLastName());
         author.setMiddleName(authorDTO.getMiddleName());
         author.setBio(authorDTO.getBio());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy", Locale.ENGLISH);
-        LocalDate date = LocalDate.parse(authorDTO.getDate(), formatter);
-        author.setDate(date);
+        LocalDate date;
+        if (authorDTO.getDate() != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy", Locale.ENGLISH);
+            date = LocalDate.parse(authorDTO.getDate(), formatter);
+            author.setDate(date);
+        }
         authorRepository.save(author);
         return authorFacade.authorToAuthorDTO(author);
     }
