@@ -20,6 +20,7 @@ import java.util.List;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final AuthorService authorService;
     private final AuthorRepository authorRepository;
     private final BookFacade bookFacade;
 
@@ -75,9 +76,10 @@ public class BookService {
     }
 
     // Добавление книги в библиотеку
-    public String addBook(BookDTO bookDto) {
-        if (bookRepository.findByTitle(bookDto.getTitle().toLowerCase()) != null)
-            return "Book already exist";
+    public BookDTO addBook(BookDTO bookDto) {
+        if (bookRepository.findByTitle(bookDto.getTitle().toLowerCase()) != null) {
+            throw new IllegalArgumentException("The book already exist!");
+        }
 
         Book book = new Book();
         book.setTitle(bookDto.getTitle());
@@ -86,8 +88,12 @@ public class BookService {
         AuthorBaseDto authorBaseDto = bookDto.getAuthor();
         Author author = authorRepository.findByFirstNameAndLastName(authorBaseDto.getFirstName(), authorBaseDto.getLastName());
 
-        if (author == null)
-            return "Author dont exist, please add author! \n POST: http://localhost:8080/author/";
+        if (author == null) {
+            AuthorDTO authorDto = new AuthorDTO();
+            authorDto.setFirstName(authorBaseDto.getFirstName());
+            authorDto.setLastName(authorBaseDto.getLastName());
+            authorService.addAuthor(authorDto);
+        }
 
         book.setAuthor(author);
         List<Book> books = bookRepository.findAll();
@@ -105,22 +111,24 @@ public class BookService {
             }
         }
         book.setSerialNumber(serialNumber);
+        BookDTO bookDtoResult = bookFacade.bookToBookDTO(book);
         bookRepository.save(book);
-        return "Book added successfully";
+        return bookDtoResult;
     }
 
     // Обновление информации о книге (Название и автор)
-    public String updateBook(Long id, BookDTO bookDto) throws NotFoundException {
-        Book book = bookRepository.findById(id).orElse(book = null);
-        if (book == null)
-            return "Book not found!";
+    public BookDTO updateBook(Long id, BookDTO bookDto) throws NotFoundException {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Book not found!"));
 
         // Если отсутствуют доступные для изменения поля, то возвращаем сообшение
-        if (bookDto.getTitle() == null && bookDto.getAuthor() == null)
-            return "Nothing to change!";
+        if (bookDto.getTitle() == null && bookDto.getAuthor() == null) {
+            throw new IllegalArgumentException("Please write new Title or new Author!");
+        }
 
-        if (bookDto.getTitle() != null)
+        if (bookDto.getTitle() != null) {
             book.setTitle(bookDto.getTitle());
+        }
 
         if (bookDto.getAuthor() != null) {
             AuthorBaseDto authorDto = bookDto.getAuthor();
@@ -129,18 +137,18 @@ public class BookService {
                 book.setAuthor(author);
         }
         bookRepository.save(book);
-        return "Book updated successfully";
+        BookDTO result = bookFacade.bookToBookDTO(book);
+        return result;
     }
 
     // Удаление книги с полки
-    public String deleteBookFromShelf(Long id) {
-        Book book = bookRepository.findById(id).orElse(book = null);
-        if (book == null)
-            return "Book is not found";
+    public BookDTO deleteBookFromShelf(Long id) throws Exception {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Book not found!"));
 
         // Проверка, имеется ли данная книга на полке
         if (!book.isAvailable())
-            return "The book is not on the shelf.";
+            throw new Exception("The book already on shelf!");
 
         book.setAvailable(false);
         int serialNumber = book.getSerialNumber();
@@ -155,7 +163,9 @@ public class BookService {
                 bookRepository.save(book1);
             }
 
-        return "Book deleted from shelf successfully";
+        BookDTO result = bookFacade.bookToBookDTO(book);
+
+        return result;
     }
 
 }

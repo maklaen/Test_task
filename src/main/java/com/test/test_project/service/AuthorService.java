@@ -23,14 +23,13 @@ public class AuthorService {
     private final AuthorFacade authorFacade;
 
     // Добавление автора в список авторов
-    public String addAuthor(AuthorDTO authorDTO) {
-
+    public AuthorDTO addAuthor(AuthorDTO authorDTO) {
         if (authorRepository.findByFirstNameAndLastName(authorDTO.getFirstName(), authorDTO.getLastName()) != null) {
-            return "Author already exist!";
+            throw new IllegalArgumentException("Author already exist!");
         }
         Author author = authorFacade.authorDtoToAuthor(authorDTO);
         authorRepository.save(author);
-        return "Author added successfully";
+        return authorDTO;
     }
 
     // Получение списка всех авторов
@@ -45,9 +44,9 @@ public class AuthorService {
 
     // Обновление информации об авторе
     public AuthorDTO updateAuthor(Long id, AuthorDTO authorDTO) throws NotFoundException {
-
         Author author = authorRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Author not found"));
+
         author.setFirstName(authorDTO.getFirstName());
         author.setLastName(authorDTO.getLastName());
         author.setMiddleName(authorDTO.getMiddleName());

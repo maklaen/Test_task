@@ -1,5 +1,6 @@
 package com.test.test_project.dto;
 
+import com.test.test_project.util.FormatUtil;
 import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
@@ -12,10 +13,10 @@ public class AuthorBaseDto {
     private String lastName;
 
     public String getFirstName() {
-        return firstName.substring(0, 1).toUpperCase() + firstName.substring(1).toLowerCase();
+        return FormatUtil.toNameFormat(firstName);
     }
 
     public String getLastName() {
-        return lastName.substring(0, 1).toUpperCase() + lastName.substring(1).toLowerCase();
+        return FormatUtil.toNameFormat(lastName);
     }
 }

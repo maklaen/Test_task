@@ -28,9 +28,11 @@ public class AuthorFacade {
         author.setLastName(authorDto.getLastName());
         author.setMiddleName(authorDto.getMiddleName());
         author.setBio(authorDto.getBio());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy", Locale.ENGLISH);
-        LocalDate date = LocalDate.parse(authorDto.getDate(), formatter);
-        author.setDate(date);
+        if (authorDto.getDate() != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy", Locale.ENGLISH);
+            LocalDate date = LocalDate.parse(authorDto.getDate(), formatter);
+            author.setDate(date);
+        }
         return author;
     }
 }

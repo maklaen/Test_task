@@ -15,7 +15,7 @@ public class BookController {
     private final BookService bookService;
 
     @PostMapping("/")
-    public String addBook(@RequestBody BookDTO bookDTO)  {
+    public BookDTO addBook(@RequestBody BookDTO bookDTO) {
         return bookService.addBook(bookDTO);
     }
 
@@ -45,12 +45,12 @@ public class BookController {
     }
 
     @PutMapping("/{id}")
-    public String updateBook(@PathVariable Long id, @RequestBody BookDTO bookDTO) throws NotFoundException {
+    public BookDTO updateBook(@PathVariable Long id, @RequestBody BookDTO bookDTO) throws NotFoundException {
         return bookService.updateBook(id, bookDTO);
     }
 
     @DeleteMapping("/{id}")
-    public String deleteBookFromShelf(@PathVariable Long id) {
+    public BookDTO deleteBookFromShelf(@PathVariable Long id) throws Exception {
         return bookService.deleteBookFromShelf(id);
     }
 }

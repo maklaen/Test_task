@@ -3,6 +3,7 @@ package com.test.test_project.model;
 import lombok.Data;
 
 import javax.persistence.*;
+import javax.validation.constraints.PositiveOrZero;
 
 @Entity
 @Table(name = "Book")
@@ -13,6 +14,7 @@ public class Book {
     private Long id;
     @Column(unique = true)
     private String title;
+    @PositiveOrZero
     private int serialNumber;
     private boolean available;
 

@@ -15,7 +15,7 @@ public class AuthorController {
     private final AuthorService authorService;
 
     @PostMapping("/")
-    public String addAuthor(@RequestBody AuthorDTO authorDTO) {
+    public AuthorDTO addAuthor(@RequestBody AuthorDTO authorDTO) {
         return authorService.addAuthor(authorDTO);
     }
 
