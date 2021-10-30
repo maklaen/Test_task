@@ -1,11 +1,13 @@
 package com.test.test_project.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 
 @Data
 public class BookDTO {
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private Long id;
     @NotEmpty
     private String title;
