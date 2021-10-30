@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Инструкция
 
 1. Клонировать проект в IntelliJIdea
@@ -163,3 +164,7 @@ Request
 + GET /book/title - сортировка книг по названию
 + GET /book/serial - сортировка книг по порядковому номеру
 
+=======
+# Test_task
+Project for java vacancy
+>>>>>>> origin/master
